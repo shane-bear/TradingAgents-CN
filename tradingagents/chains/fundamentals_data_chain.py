@@ -40,17 +40,9 @@ def create_fundamentals_data_chain():
     )
 
     # Step 2: Define Market-Specific Data Fetching Chains with Fallbacks
-
-
-    a_share_combined_chain = RunnableLambda(
-        lambda x: get_a_share_fundamentals_optimized.func(
-            ticker=x["ticker"],
-            start_date=x["start_date"],
-            end_date=x["end_date"],
-        )
-    )
-
-
+    a_share_combined_chain = get_a_share_fundamentals_optimized
+    
+    # HK data chain: Tries Yahoo -> AKShare -> Finnhub -> Final failure message.
     hk_data_chain = get_us_data_yahoo.with_fallbacks(
         fallbacks=[
             get_hk_data_akshare.with_fallbacks([
