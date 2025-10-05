@@ -128,3 +128,50 @@ class YFinanceUtils:
         majority_voting_result = row_0[row_0 == max_votes].index.tolist()
 
         return majority_voting_result[0], max_votes
+
+    def generate_yahoo_fundamentals_report(symbol: Annotated[str, "ticker symbol"], curr_date: str) -> str:
+        """
+        Generates a complete fundamentals report using various methods from YFinanceUtils.
+        """
+
+        logger.info(f"[DEBUG] 进入Yahoo Finance基本面数据获取 {symbol}")
+
+        try:
+            ticker = symbol
+
+
+            company_info_df = YFinanceUtils.get_company_info(ticker.ticker)
+            income_stmt_df = YFinanceUtils.get_income_stmt(ticker.ticker)
+            balance_sheet_df = YFinanceUtils.get_balance_sheet(ticker.ticker)
+            cash_flow_df = YFinanceUtils.get_cash_flow(ticker.ticker)
+
+            # --- Formatting the Report ---
+            report = f"# {ticker.ticker} 基本面分析报告 (Yahoo Finance)\n\n"
+            report += f"**报告日期**: {curr_date}\n\n"
+
+            # Company Info
+            report += "## 公司概况\n"
+            report += company_info_df.to_string(index=False)
+            report += "\n\n"
+
+            # Financial Statements
+            if not income_stmt_df.empty:
+                report += "## 最新损益表\n"
+                report += income_stmt_df.head().to_string()
+                report += "\n\n"
+
+            if not balance_sheet_df.empty:
+                report += "## 最新资产负债表\n"
+                report += balance_sheet_df.head().to_string()
+                report += "\n\n"
+
+            if not cash_flow_df.empty:
+                report += "## 最新现金流量表\n"
+                report += cash_flow_df.head().to_string()
+                report += "\n\n"
+
+            return report
+
+        except Exception as e:
+            logger.error(f"❌ [DEBUG] Yahoo Finance基本面数据获取失败 for {symbol}: {str(e)}")
+            return f"无法为 {symbol} 生成Yahoo Finance基本面报告: {e}"

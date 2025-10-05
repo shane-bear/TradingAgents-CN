@@ -54,7 +54,6 @@ from .interface import (
     switch_china_data_source,
     get_current_china_data_source,
     # Hong Kong stock functions
-    get_hk_stock_data_unified,
     get_hk_stock_info_unified,
     get_stock_data_by_market,
 )
@@ -88,7 +87,6 @@ __all__ = [
     "switch_china_data_source",
     "get_current_china_data_source",
     # Hong Kong stock functions
-    "get_hk_stock_data_unified",
     "get_hk_stock_info_unified",
     "get_stock_data_by_market",
 ]

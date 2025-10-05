@@ -17,6 +17,7 @@ from langchain_core.messages import HumanMessage
 # 导入统一日志系统和工具日志装饰器
 from tradingagents.utils.logging_init import get_logger
 from tradingagents.utils.tool_logging import log_tool_call, log_analysis_step
+from tradingagents.tools.unified_wrapper import get_stock_fundamentals_unified as unified_fundamentals_tool
 
 # 导入日志模块
 from tradingagents.utils.logging_manager import get_logger
@@ -656,47 +657,18 @@ class Toolkit:
             logger.error(f"❌ [DEBUG] 堆栈: {error_details}")
             return f"中国股票基本面分析失败: {str(e)}"
 
-    @staticmethod
-    # @tool  # 已移除：请使用 get_stock_fundamentals_unified 或 get_stock_market_data_unified
-    def get_hk_stock_data_unified(
-        symbol: Annotated[str, "港股代码，如：0700.HK、9988.HK等"],
-        start_date: Annotated[str, "开始日期，格式：YYYY-MM-DD"],
-        end_date: Annotated[str, "结束日期，格式：YYYY-MM-DD"]
-    ) -> str:
-        """
-        获取港股数据的统一接口，优先使用AKShare数据源，备用Yahoo Finance
+    # This tool is now obsolete. The unified tool `get_stock_fundamentals_unified` should be used instead.
+    # @tool
+    # def get_hk_stock_data_unified(...): ...
 
-        Args:
-            symbol: 港股代码 (如: 0700.HK)
-            start_date: 开始日期 (YYYY-MM-DD)
-            end_date: 结束日期 (YYYY-MM-DD)
-
-        Returns:
-            str: 格式化的港股数据
-        """
-        logger.debug(f"🇭🇰 [DEBUG] get_hk_stock_data_unified 被调用: symbol={symbol}, start_date={start_date}, end_date={end_date}")
-
-        try:
-            from tradingagents.dataflows.interface import get_hk_stock_data_unified
-
-            result = get_hk_stock_data_unified(symbol, start_date, end_date)
-
-            logger.debug(f"🇭🇰 [DEBUG] 港股数据获取完成，长度: {len(result) if result else 0}")
-
-            return result
-
-        except Exception as e:
-            import traceback
-            error_details = traceback.format_exc()
-            logger.error(f"❌ [DEBUG] get_hk_stock_data_unified 失败:")
-            logger.error(f"❌ [DEBUG] 错误: {str(e)}")
-            logger.error(f"❌ [DEBUG] 堆栈: {error_details}")
-            return f"港股数据获取失败: {str(e)}"
+    # Refactored to use the unified LCEL chain via a wrapper.
+    # The new tool handles market identification, data fetching, and fallbacks.
+    get_stock_fundamentals_unified = unified_fundamentals_tool
 
     @staticmethod
     @tool
-    @log_tool_call(tool_name="get_stock_fundamentals_unified", log_args=True)
-    def get_stock_fundamentals_unified(
+    @log_tool_call(tool_name="get_stock_fundamentals_unified_obsoleted", log_args=True)
+    def get_stock_fundamentals_unified_obsoleted(
         ticker: Annotated[str, "股票代码（支持A股、港股、美股）"],
         start_date: Annotated[str, "开始日期，格式：YYYY-MM-DD"] = None,
         end_date: Annotated[str, "结束日期，格式：YYYY-MM-DD"] = None,

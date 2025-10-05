@@ -996,8 +996,8 @@ def get_fundamentals_finnhub(ticker, curr_date):
 
 def get_fundamentals_openai(ticker, curr_date):
     """
-    获取股票基本面数据，优先使用OpenAI，失败时回退到Finnhub API
-    支持缓存机制以提高性能
+    使用OpenAI API获取股票基本面数据。
+    支持缓存机制以提高性能。此函数不再包含到Finnhub的回退逻辑。
     Args:
         ticker (str): 股票代码
         curr_date (str): 当前日期，格式为yyyy-mm-dd
@@ -1006,8 +1006,8 @@ def get_fundamentals_openai(ticker, curr_date):
     """
     try:
         from .cache_manager import get_cache
-        
-        # 检查缓存 - 优先检查OpenAI缓存
+
+        # 检查缓存
         cache = get_cache()
         cached_key = cache.find_cached_fundamentals_data(ticker, data_source="openai")
         if cached_key:
@@ -1015,28 +1015,23 @@ def get_fundamentals_openai(ticker, curr_date):
             if cached_data:
                 logger.debug(f"💾 [DEBUG] 从缓存加载OpenAI基本面数据: {ticker}")
                 return cached_data
-        
+
         config = get_config()
 
-        # 检查是否配置了OpenAI API Key（这是最关键的检查）
+        # 检查配置，如果缺少则会自然失败
         openai_api_key = os.getenv("OPENAI_API_KEY")
         if not openai_api_key:
-            logger.debug(f"📊 [DEBUG] 未配置OPENAI_API_KEY，跳过OpenAI API，直接使用Finnhub")
-            return get_fundamentals_finnhub(ticker, curr_date)
+            raise ValueError("错误：未配置OPENAI_API_KEY环境变量")
 
-        # 检查是否配置了OpenAI相关设置
         if not config.get("backend_url") or not config.get("quick_think_llm"):
-            logger.debug(f"📊 [DEBUG] OpenAI配置不完整，直接使用Finnhub API")
-            return get_fundamentals_finnhub(ticker, curr_date)
+            raise ValueError("错误：OpenAI配置不完整 (backend_url or quick_think_llm)")
 
-        # 检查backend_url是否是OpenAI的URL
         backend_url = config.get("backend_url", "")
         if "openai.com" not in backend_url:
-            logger.debug(f"📊 [DEBUG] backend_url不是OpenAI API ({backend_url})，跳过OpenAI，使用Finnhub")
-            return get_fundamentals_finnhub(ticker, curr_date)
-        
+            raise ValueError(f"错误：backend_url不是有效的OpenAI API URL: {backend_url}")
+
         logger.debug(f"📊 [DEBUG] 尝试使用OpenAI获取 {ticker} 的基本面数据...")
-        
+
         client = OpenAI(base_url=config["backend_url"])
 
         response = client.responses.create(
@@ -1068,18 +1063,18 @@ def get_fundamentals_openai(ticker, curr_date):
         )
 
         result = response.output[1].content[0].text
-        
+
         # 保存到缓存
         if result and len(result) > 100:  # 只有当结果有实际内容时才缓存
             cache.save_fundamentals_data(ticker, result, data_source="openai")
-        
+
         logger.debug(f"📊 [DEBUG] OpenAI基本面数据获取成功，长度: {len(result)}")
         return result
-        
+
     except Exception as e:
         logger.error(f"❌ [DEBUG] OpenAI基本面数据获取失败: {str(e)}")
-        logger.debug(f"📊 [DEBUG] 回退到Finnhub API...")
-        return get_fundamentals_finnhub(ticker, curr_date)
+        # 重新抛出异常，以便LCEL的fallbacks机制可以捕获它
+        raise e
 
 
 # ==================== Tushare数据接口 ====================
@@ -1509,6 +1504,22 @@ def get_hk_stock_info_unified(symbol: str) -> Dict:
             'source': 'error',
             'error': str(e)
         }
+
+
+def get_fundamentals_yahoo(ticker, curr_date):
+    """
+    使用yfinance生成股票基本面数据报告
+    Args:
+        ticker (str): 股票代码
+        curr_date (str): 当前日期，格式为yyyy-mm-dd
+    Returns:
+        str: 基本面数据报告
+    """
+    if not YFIN_AVAILABLE:
+        return "yfinance工具不可用，无法获取Yahoo Finance数据"
+
+    from .yfin_utils import YFinanceUtils
+    return YFinanceUtils.generate_yahoo_fundamentals_report(ticker, curr_date)
 
 
 def get_stock_data_by_market(symbol: str, start_date: str = None, end_date: str = None) -> str:
