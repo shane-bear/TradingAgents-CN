@@ -3,7 +3,7 @@ from langchain_core.runnables import RunnableBranch, RunnableLambda, RunnablePas
 from tradingagents.tools.fundamentals_atomic_tools import (
     market_identifier_tool,
     get_a_share_fundamentals_optimized,
-    get_hk_data_akshare,
+    get_hk_data_akshare_wip, get_hk_data_yahoo_wip, get_hk_data_finnhub_wip,
     get_us_data_finnhub, get_us_data_openai, get_us_data_yahoo,
     format_fundamentals_report
 )
@@ -42,12 +42,16 @@ def create_fundamentals_data_chain():
     # Step 2: Define Market-Specific Data Fetching Chains with Fallbacks
     a_share_combined_chain = get_a_share_fundamentals_optimized
     
-    # HK data chain: Tries Yahoo -> AKShare -> Finnhub -> Final failure message.
+    # HK data chain: Tries Yahoo -> Finnhub -> AKShare -> Final failure message.
     hk_data_chain = get_us_data_yahoo.with_fallbacks(
         fallbacks=[
-            get_hk_data_akshare.with_fallbacks([
-                get_us_data_finnhub.with_fallbacks([
-                    RunnableLambda(lambda x: f"❌ 港股 {x['ticker']} 数据完全无法获取。")
+            get_us_data_finnhub.with_fallbacks([
+                get_hk_data_akshare_wip.with_fallbacks([
+                    get_hk_data_yahoo_wip.with_fallbacks([
+                        get_hk_data_finnhub_wip.with_fallbacks([
+                            RunnableLambda(lambda x: f"⚠️ 港股 {x['ticker']} 数据获取失败。")
+                        ])
+                    ])
                 ])
             ])
         ]

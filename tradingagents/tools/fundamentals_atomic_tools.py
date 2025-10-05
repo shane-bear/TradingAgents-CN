@@ -51,27 +51,31 @@ def get_a_share_fundamentals_optimized(ticker: str, start_date: str, end_date: s
 
 # 3. Hong Kong Stock Data Source Tools
 @tool
-def get_hk_data_akshare(ticker: str, start_date: str, end_date: str) -> str:
+def get_hk_data_akshare_wip(ticker: str, start_date: str, end_date: str) -> str:
     """
-    Fetches Hong Kong stock data from AKShare. This is the primary data source.
+    Fetches Hong Kong stock data from AKShare. This is the primary data source in original chain, in get_stock_fundamentals_unified_obsoleted()
+    取出的只是一些简单的历史信息，完全谈不上基本面
     """
     from tradingagents.dataflows.akshare_utils import get_hk_stock_data_akshare
     print(f"--- Using AKShare for HK stock data of {ticker} ---")
     return get_hk_stock_data_akshare(ticker, start_date, end_date)
 
 @tool
-def get_hk_data_yahoo_backup(ticker: str, start_date: str, end_date: str) -> str:
+def get_hk_data_yahoo_wip(ticker: str, start_date: str, end_date: str) -> str:
     """
-    Fetches Hong Kong stock data from Yahoo Finance. This is the first backup.
+    Fetches Hong Kong stock data from Yahoo Finance. This is the first backup in original chain, in get_stock_fundamentals_unified_obsoleted()
+    但是同上面 akshare 的问题一样，取的也是一些简单的历史信息，完全谈不上基本面
     """
     from tradingagents.dataflows.hk_stock_utils import get_hk_stock_data
     print(f"--- Using Yahoo Finance backup for HK stock data of {ticker} ---")
     return get_hk_stock_data(ticker, start_date, end_date)
 
 @tool
-def get_hk_data_finnhub_backup(ticker: str, start_date: str, end_date: str) -> str:
+def get_hk_data_finnhub_wip(ticker: str, start_date: str, end_date: str) -> str:
     """
-    Fetches Hong Kong stock data from Finnhub. This is the second backup.
+    Fetches Hong Kong stock data from Finnhub. This is the second backup original chain, in get_stock_fundamentals_unified_obsoleted()
+    但是同上面 akshare，yahoo 的问题一样，取的也是一些简单的历史信息，完全谈不上基本面
+    而且函数里面又充满 fallback，看起来也很混乱
     """
     from tradingagents.dataflows.optimized_us_data import get_us_stock_data_cached
     print(f"--- Using Finnhub backup for HK stock data of {ticker} ---")
@@ -134,7 +138,7 @@ def format_fundamentals_report(
 {chr(10).join(results)}
 
 ---
-*数据来源: 多数据源自动切换，包含多级fallback保障*
-*系统稳定性: ⭐⭐⭐⭐⭐*
+*数据来源: 带 fallback 机制的多数据源链*
+
 """
     return combined_result
