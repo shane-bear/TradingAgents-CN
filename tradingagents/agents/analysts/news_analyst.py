@@ -7,7 +7,7 @@ from datetime import datetime
 from tradingagents.utils.logging_init import get_logger
 from tradingagents.utils.tool_logging import log_analyst_module
 # 导入统一新闻工具
-from tradingagents.tools.unified_news_tool import create_unified_news_tool
+from tradingagents.tools.unified_news_wrapper import create_unified_news_tool
 # 导入股票工具类
 from tradingagents.utils.stock_utils import StockUtils
 # 导入Google工具调用处理器
@@ -95,8 +95,12 @@ def create_news_analyst(llm, toolkit):
         unified_news_tool = create_unified_news_tool(toolkit)
         unified_news_tool.name = "get_stock_news_unified"
         
+
+
         tools = [unified_news_tool]
         logger.info(f"[新闻分析师] 已加载统一新闻工具: get_stock_news_unified")
+
+        direct_news = unified_news_tool(stock_code= ticker)
 
         system_message = (
             """您是一位专业的财经新闻分析师，负责分析最新的市场新闻和事件对股票价格的潜在影响。
@@ -326,8 +330,12 @@ def create_news_analyst(llm, toolkit):
                     logger.error(f"[新闻分析师] ❌ 强制补救过程失败: {e}")
                     report = result.content
             else:
+                #def get_stock_news_unified(stock_code: str, max_news: int = 100, model_info: str = ""):
+                #direct_news = unified_news_tool(stock_code= ticker)
+
                 # 有工具调用，直接使用结果
                 report = result.content
+
         
         total_time_taken = (datetime.now() - start_time).total_seconds()
         logger.info(f"[新闻分析师] 新闻分析完成，总耗时: {total_time_taken:.2f}秒")
@@ -338,6 +346,7 @@ def create_news_analyst(llm, toolkit):
         clean_message = AIMessage(content=report)
         
         logger.info(f"[新闻分析师] ✅ 返回清洁消息，报告长度: {len(report)} 字符")
+        logger.info(f"[新闻分析师] ✅ 返回清洁消息，报告: {report} ")
 
         return {
             "messages": [clean_message],

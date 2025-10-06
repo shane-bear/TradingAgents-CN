@@ -1,6 +1,6 @@
 # tradingagents/chains/fundamentals_data_chain.py
 from langchain_core.runnables import RunnableBranch, RunnableLambda, RunnablePassthrough
-from tradingagents.tools.fundamentals_atomic_tools import (
+from tradingagents.tools.fundamentals_lcel_tools import (
     market_identifier_tool,
     get_a_share_fundamentals_optimized,
     get_hk_data_akshare_wip, get_hk_data_yahoo_wip, get_hk_data_finnhub_wip,

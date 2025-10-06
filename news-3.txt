@@ -1,17 +1,3 @@
-╭───────────────────────────────────────────────────╮
-│ ✻ Welcome to Claude Code!                         │
-│                                                   │
-│   /help for help, /status for your current setup  │
-│                                                   │
-│   cwd: C:\Work\hsliuping\TradingAgents-CN         │
-│                                                   │
-│   ─────────────────────────────────────────────── │
-│                                                   │
-│   Overrides (via env):                            │
-│                                                   │
-│   • API timeout: 600000ms                         │
-│   • API Base URL: http://127.0.0.1:3456           │
-╰───────────────────────────────────────────────────╯
 
 > 请详细说明代码中新闻相关的代码的调用关系
   ⎿  Interrupted · What should Claude do instead?

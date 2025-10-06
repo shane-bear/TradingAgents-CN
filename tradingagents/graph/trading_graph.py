@@ -128,15 +128,18 @@ class TradingAgentsGraph:
                 temperature=0.1,
                 max_tokens=2000
             )
+            # self.quick_thinking_llm = ChatGoogleOpenAI(
+            #     model=self.config["quick_think_llm"],
+            #     google_api_key=google_api_key,
+            #     temperature=0.1,
+            #     max_tokens=2000,
+            #     client_options=client_options,
+            #     transport="rest"
+            # )
             self.quick_thinking_llm = ChatGoogleOpenAI(
                 model=self.config["quick_think_llm"],
-                google_api_key=google_api_key,
-                temperature=0.1,
-                max_tokens=2000,
-                client_options=client_options,
-                transport="rest"
-            )
-            
+                google_api_key=google_api_key
+           )            
             logger.info(f"✅ [Google AI] 已启用优化的工具调用和内容格式处理")
         elif (self.config["llm_provider"].lower() == "dashscope" or
               self.config["llm_provider"].lower() == "alibaba" or
