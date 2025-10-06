@@ -264,6 +264,7 @@ class EnhancedNewsFilter(NewsRelevanceFilter):
         Returns:
             pd.DataFrame: 过滤后的新闻DataFrame，包含详细评分信息
         """
+        logger.info(f"[增强过滤器] DataFrame received. Shape: {news_df.shape}, Columns: {news_df.columns.tolist()}")
         if news_df.empty:
             logger.warning("[增强过滤器] 输入新闻DataFrame为空")
             return news_df

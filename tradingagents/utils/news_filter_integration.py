@@ -21,7 +21,7 @@ def integrate_news_filtering(original_get_stock_news_em):
         包装后的函数，具有新闻过滤功能
     """
     def filtered_get_stock_news_em(symbol: str, enable_filter: bool = True, min_score: float = 30, 
-                                  use_semantic: bool = False, use_local_model: bool = False) -> pd.DataFrame:
+                                  use_semantic: bool = False, use_local_model: bool = False, max_news: int = 10) -> pd.DataFrame:
         """
         增强版get_stock_news_em，集成新闻过滤功能
         
@@ -40,7 +40,7 @@ def integrate_news_filtering(original_get_stock_news_em):
         # 调用原始函数获取新闻
         start_time = datetime.now()
         try:
-            news_df = original_get_stock_news_em(symbol)
+            news_df = original_get_stock_news_em(symbol,max_news)
             fetch_time = (datetime.now() - start_time).total_seconds()
             
             if news_df.empty:
@@ -257,6 +257,17 @@ def apply_news_filtering_patches():
 
 
 if __name__ == "__main__":
+    # --- 强制设置日志级别为DEBUG ---
+    # 获取根logger
+    root_logger = logging.getLogger()
+    # 设置根logger的级别
+    root_logger.setLevel(logging.DEBUG)
+    # 同样需要设置 'tradingagents' logger 的级别
+    logging.getLogger('tradingagents').setLevel(logging.DEBUG)
+    # 遍历所有存在的handler，并设置它们的级别
+    for handler in root_logger.handlers:
+        handler.setLevel(logging.DEBUG)
+    # -----------------------------
     # 测试集成功能
     print("=== 测试新闻过滤集成 ===")
     
@@ -266,8 +277,8 @@ if __name__ == "__main__":
     # 测试增强版函数
     test_result = enhanced_news_function(
         ticker="600036",
-        curr_date="2024-07-28",
-        enable_filter=True,
+        curr_date="2025-10-06",
+        enable_filter=False,
         min_score=30
     )
     
