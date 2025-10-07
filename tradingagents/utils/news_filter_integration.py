@@ -20,8 +20,15 @@ def integrate_news_filtering(original_get_stock_news_em):
     Returns:
         包装后的函数，具有新闻过滤功能
     """
-    def filtered_get_stock_news_em(symbol: str, enable_filter: bool = True, min_score: float = 30, 
-                                  use_semantic: bool = False, use_local_model: bool = False, max_news: int = 10) -> pd.DataFrame:
+    def filtered_get_stock_news_em(
+            symbol: str, 
+            max_news: int = 10,
+            #patch_akshare_utils 这种简单粗暴的函数替换，导致只有上面两个参数被传进来，无论外层代码怎么设置，下面的参数其实取得都是默认值
+            enable_filter: bool = True, 
+            min_score: float = 30, 
+            use_semantic: bool = True, 
+            use_local_model: bool = True, 
+        ) -> pd.DataFrame:
         """
         增强版get_stock_news_em，集成新闻过滤功能
         
@@ -283,4 +290,4 @@ if __name__ == "__main__":
     )
     
     print(f"测试结果长度: {len(test_result)} 字符")
-    print(f"测试结果预览: {test_result[:200]}...")
+    print(f"测试结果预览: {test_result[:20000]}...")

@@ -53,6 +53,7 @@ class EnhancedNewsFilter(NewsRelevanceFilter):
             
             # 尝试使用sentence-transformers
             try:
+                #pip install sentence-transformers
                 from sentence_transformers import SentenceTransformer
                 
                 # 使用轻量级中文模型
