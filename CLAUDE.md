@@ -40,6 +40,8 @@ streamlit run web/app.py --server.port 8501
 ```
 
 ### 测试运行
+**重要**: 在Windows环境下运行时，为了避免 `UnicodeEncodeError` (通常由表情符号或特殊字符引发)，强烈建议在所有 `python` 命令后添加 `-X utf8` 参数。这将强制Python解释器使用UTF-8编码处理所有I/O。
+
 ```bash
 # 运行单个测试文件
 python -X utf8 tests/test_akshare_functionality.py
@@ -199,6 +201,44 @@ docker-compose -f docker-compose.yml up --build
 - 丰富的测试脚本在 `tests/` 和 `scripts/` 目录
 - 日志分析工具 `scripts/log_analyzer.py`
 - Docker 调试脚本 `scripts/debug_docker.*`
+
+### 📝 日志与调试 (Logging & Debugging)
+
+**重要**: 本项目使用位于 `tradingagents/utils/logging_manager.py` 的自定义日志系统。该系统在首次导入时初始化，并会覆盖标准的 Python 日志配置。因此，直接使用 `logging.basicConfig()` 或修改根日志记录器将不会生效。
+
+要在测试或脚本中可靠地将日志级别设置为 `DEBUG`，**必须**使用项目自带的 `setup_logging` 函数，并向其传递一个特定的配置字典。
+
+**正确配置日志级别的代码范例:**
+
+```python
+from tradingagents.utils.logging_manager import setup_logging
+
+# 这是一个可靠的日志配置模板
+log_config = {
+    'level': 'DEBUG',  # 1. 设置根日志级别为 DEBUG
+    'handlers': {
+        'console': {'enabled': True, 'level': 'DEBUG', 'colored': True},
+        'file': {'enabled': False},
+        'structured': {'enabled': False}
+    },
+    'format': {
+         'console': '%(asctime)s | %(name)-40s | %(levelname)-8s | %(message)s'
+    },
+    'loggers': {
+        # 2. **最关键的一步**: 必须明确覆盖项目主包的日志级别
+        'tradingagents': {'level': 'DEBUG'},
+
+        # 3. (可选) 将其他过于嘈杂的库的日志级别调高，以保持输出清洁
+        'urllib3': {'level': 'WARNING'},
+    },
+    'docker': {'enabled': False}
+}
+
+# 应用此配置
+setup_logging(log_config)
+
+# 在此之后，所有来自 'tradingagents' 包的日志记录器都将输出 DEBUG 级别的消息
+```
 
 ## 🎯 开发重点
 
