@@ -114,7 +114,7 @@ def test_enhanced_news_filter():
         
         # 执行增强过滤
         start_time = time.time()
-        enhanced_filtered = enhanced_filter.filter_news_enhanced(test_news, min_score=40)
+        enhanced_filtered = enhanced_filter.filter(test_news, min_score=40)
         filter_time = time.time() - start_time
         
         print(f"⏱️ 增强过滤耗时: {filter_time:.3f}秒")
@@ -196,39 +196,51 @@ def test_real_news_filtering():
         return False
 
 
-def test_news_filter_integration():
-    """测试新闻过滤集成功能"""
-    print("\n=== 测试新闻过滤集成功能 ===")
-    
+def test_news_pipeline():
+    """测试新的新闻处理管道功能"""
+    print("\n=== 测试新闻处理管道功能 ===")
+
     try:
-        from tradingagents.utils.news_filter_integration import apply_news_filtering_patches
-        
-        print("🔧 正在应用新闻过滤补丁...")
-        enhanced_function = apply_news_filtering_patches()
-        
-        print("✅ 新闻过滤补丁应用成功")
-        
-        # 测试增强版函数
-        print("🧪 测试增强版实时新闻函数...")
-        
-        test_result = enhanced_function(
-            ticker="600036",
-            curr_date=datetime.now().strftime("%Y-%m-%d"),
+        from tradingagents.chains.news_filter_chain import NewsProcessingPipeline
+
+        print("🔧 正在创建新闻处理管道...")
+        news_pipeline = NewsProcessingPipeline()
+        print("✅ 新闻处理管道创建成功")
+
+        # 测试管道
+        print("🧪 使用管道获取和过滤新闻...")
+
+        filtered_news = news_pipeline.run(
+            symbol="600036",
+            max_news=20,
             enable_filter=True,
-            min_score=30
+            min_score=40
         )
-        
-        print(f"📊 增强版函数返回结果长度: {len(test_result)} 字符")
-        
-        if "过滤新闻报告" in test_result:
-            print("✅ 检测到过滤功能已生效")
+
+        print(f"📊 管道返回结果: {len(filtered_news)} 条新闻")
+
+        if not filtered_news.empty:
+            print("✅ 管道成功返回了过滤后的新闻数据。")
+            print(f"   最高分: {filtered_news['final_score'].max():.1f}, 平均分: {filtered_news['final_score'].mean():.1f}")
         else:
-            print("ℹ️ 使用了原始新闻报告")
-        
+            # 即使为空也可能是正常情况（所有新闻都被过滤）
+            print("ℹ️ 管道返回了空的DataFrame，可能是所有新闻都被过滤或未获取到新闻。")
+
+        # 测试禁用过滤器的管道
+        print("🧪 测试禁用过滤器的管道...")
+        raw_news = news_pipeline.run(
+            symbol="600036",
+            max_news=20,
+            enable_filter=False
+        )
+        print(f"📊 管道（禁用过滤）返回结果: {len(raw_news)} 条新闻")
+        assert not raw_news.empty, "禁用过滤器时，管道应返回原始新闻"
+        print("✅ 禁用过滤器时，管道成功返回了原始数据。")
+
         return True
-        
+
     except Exception as e:
-        print(f"❌ 新闻过滤集成测试失败: {e}")
+        print(f"❌ 新闻处理管道测试失败: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -236,6 +248,30 @@ def test_news_filter_integration():
 
 def main():
     """主测试函数"""
+    from tradingagents.utils.logging_manager import setup_logging
+
+    # 使用项目自己的日志配置函数，强制设置日志级别
+    # 关键在于 'loggers' 部分，我们必须明确覆盖 'tradingagents' 包的级别
+    log_config = {
+        'level': 'DEBUG',  # 1. 根日志级别设为DEBUG
+        'handlers': {
+            'console': {'enabled': True, 'level': 'DEBUG', 'colored': True},
+            'file': {'enabled': False},
+            'structured': {'enabled': False}
+        },
+        'format': {
+             'console': '%(asctime)s | %(name)-40s | %(levelname)-8s | %(message)s'
+        },
+        'loggers': {
+            # 2. 这是最关键的一步：将项目主包的级别也设为DEBUG
+            'tradingagents': {'level': 'DEBUG'},
+            'agents': {'level': 'DEBUG'},
+            # 3. (可选) 将其他嘈杂的库级别调高
+            'urllib3': {'level': 'WARNING'},
+        },
+        'docker': {'enabled': False}
+    }
+    setup_logging(log_config)
     print("🚀 开始新闻过滤功能测试")
     print("=" * 50)
     
@@ -250,8 +286,8 @@ def main():
     # 3. 测试真实新闻过滤
     test_results.append(("真实新闻数据过滤", test_real_news_filtering()))
     
-    # 4. 测试集成功能
-    test_results.append(("新闻过滤集成功能", test_news_filter_integration()))
+    # 4. 测试新闻处理管道
+    test_results.append(("新闻处理管道功能", test_news_pipeline()))
     
     # 输出测试总结
     print("\n" + "=" * 50)

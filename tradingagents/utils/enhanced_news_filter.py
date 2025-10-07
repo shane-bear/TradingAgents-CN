@@ -254,7 +254,7 @@ class EnhancedNewsFilter(NewsRelevanceFilter):
         
         return scores
     
-    def filter_news_enhanced(self, news_df: pd.DataFrame, min_score: float = 40) -> pd.DataFrame:
+    def filter(self, news_df: pd.DataFrame, min_score: float = 40) -> pd.DataFrame:
         """
         增强新闻过滤
         
@@ -350,7 +350,7 @@ if __name__ == "__main__":
     enhanced_filter = create_enhanced_news_filter('600036', use_semantic=False, use_local_model=False)
     
     # 过滤新闻
-    filtered_news = enhanced_filter.filter_news_enhanced(test_news, min_score=30)
+    filtered_news = enhanced_filter.filter(test_news, min_score=30)
     
     print(f"原始新闻: {len(test_news)}条")
     print(f"过滤后新闻: {len(filtered_news)}条")

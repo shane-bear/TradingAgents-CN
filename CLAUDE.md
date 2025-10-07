@@ -42,10 +42,10 @@ streamlit run web/app.py --server.port 8501
 ### 测试运行
 ```bash
 # 运行单个测试文件
-python tests/test_akshare_functionality.py
+python -X utf8 tests/test_akshare_functionality.py
 
 # 运行 CLI 测试
-python -m tradingagents.cli.main --stock 601127 --date 2024-05-10
+python -X utf8 -m tradingagents.cli.main --stock 601127 --date 2024-05-10
 ```
 
 ## 🏗️ 架构概览

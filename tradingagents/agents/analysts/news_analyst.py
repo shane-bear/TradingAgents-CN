@@ -7,7 +7,7 @@ from datetime import datetime
 from tradingagents.utils.logging_init import get_logger
 from tradingagents.utils.tool_logging import log_analyst_module
 # 导入统一新闻工具
-from tradingagents.tools.unified_news_wrapper import create_unified_news_tool
+from tradingagents.tools.unified_news_wrapper import get_stock_news_unified
 # 导入股票工具类
 from tradingagents.utils.stock_utils import StockUtils
 # 导入Google工具调用处理器
@@ -16,7 +16,7 @@ from tradingagents.agents.utils.google_tool_handler import GoogleToolCallHandler
 logger = get_logger("analysts.news")
 
 
-def create_news_analyst(llm, toolkit):
+def create_news_analyst(llm):
     @log_analyst_module("news")
     def news_analyst_node(state):
         start_time = datetime.now()
@@ -91,16 +91,13 @@ def create_news_analyst(llm, toolkit):
         
         # 🔧 使用统一新闻工具，简化工具调用
         logger.info(f"[新闻分析师] 使用统一新闻工具，自动识别股票类型并获取相应新闻")
-   # 创建统一新闻工具
-        unified_news_tool = create_unified_news_tool(toolkit)
-        unified_news_tool.name = "get_stock_news_unified"
         
 
 
-        tools = [unified_news_tool]
+        tools = [get_stock_news_unified]
         logger.info(f"[新闻分析师] 已加载统一新闻工具: get_stock_news_unified")
 
-        direct_news = unified_news_tool(stock_code= ticker)
+        direct_news = get_stock_news_unified.invoke({"stock_code": ticker})
 
         system_message = (
             """您是一位专业的财经新闻分析师，负责分析最新的市场新闻和事件对股票价格的潜在影响。
@@ -203,7 +200,7 @@ def create_news_analyst(llm, toolkit):
             try:
                 # 强制预先获取新闻数据
                 logger.info(f"[新闻分析师] 🔧 预处理：强制调用统一新闻工具...")
-                pre_fetched_news = unified_news_tool(stock_code=ticker, max_news=10, model_info=model_info)
+                pre_fetched_news = get_stock_news_unified(stock_code=ticker, max_news=10, model_info=model_info)
                 
                 if pre_fetched_news and len(pre_fetched_news.strip()) > 100:
                     logger.info(f"[新闻分析师] ✅ 预处理成功获取新闻: {len(pre_fetched_news)} 字符")
@@ -295,7 +292,7 @@ def create_news_analyst(llm, toolkit):
                 try:
                     # 强制获取新闻数据
                     logger.info(f"[新闻分析师] 🔧 强制调用统一新闻工具获取新闻数据...")
-                    forced_news = unified_news_tool(stock_code=ticker, max_news=10, model_info="")
+                    forced_news = get_stock_news_unified(stock_code=ticker, max_news=10, model_info="")
                     
                     if forced_news and len(forced_news.strip()) > 100:
                         logger.info(f"[新闻分析师] ✅ 强制获取新闻成功: {len(forced_news)} 字符")
@@ -331,7 +328,7 @@ def create_news_analyst(llm, toolkit):
                     report = result.content
             else:
                 #def get_stock_news_unified(stock_code: str, max_news: int = 100, model_info: str = ""):
-                #direct_news = unified_news_tool(stock_code= ticker)
+                #direct_news = get_stock_news_unified(stock_code= ticker)
 
                 # 有工具调用，直接使用结果
                 report = result.content

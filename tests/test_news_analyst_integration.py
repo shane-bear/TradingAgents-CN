@@ -19,98 +19,34 @@ def test_news_analyst_integration():
     try:
         # 导入必要的模块
         from tradingagents.agents.analysts.news_analyst import create_news_analyst
-        from tradingagents.tools.unified_news_tool import create_unified_news_tool
+        from tradingagents.tools.unified_news_wrapper import get_stock_news_unified
         print("✅ 成功导入必要模块")
-        
-        # 创建模拟工具包
-        class MockToolkit:
-            def __init__(self):
-                # 创建统一新闻工具
-                self.unified_news_tool = create_unified_news_tool(self)
-                
-            def get_realtime_stock_news(self, params):
-                stock_code = params.get("stock_code", "unknown")
-                return f"""
-【发布时间】2025-07-28 18:00:00
-【新闻标题】{stock_code}公司发布重要公告，业绩超预期增长
-【文章来源】东方财富网
 
-【新闻内容】
-1. 公司Q2季度营收同比增长25%，净利润增长30%
-2. 新产品线获得重大突破，市场前景广阔
-3. 管理层对下半年业绩表示乐观
-4. 分析师上调目标价至50元
-
-【市场影响】
-- 短期利好：业绩超预期，市场情绪积极
-- 中期利好：新产品线带来增长动力
-- 长期利好：行业地位进一步巩固
-"""
-            
-            def get_google_news(self, params):
-                query = params.get("query", "unknown")
-                return f"Google新闻搜索结果 - {query}: 相关财经新闻内容"
-            
-            def get_global_news_openai(self, params):
-                query = params.get("query", "unknown")
-                return f"OpenAI全球新闻 - {query}: 国际财经新闻内容"
-        
-        toolkit = MockToolkit()
-        print("✅ 创建模拟工具包成功")
-        
         # 创建模拟LLM
         class MockLLM:
             def __init__(self):
                 self.__class__.__name__ = "MockLLM"
-            
+
             def bind_tools(self, tools):
                 return self
-            
+
             def invoke(self, messages):
-                # 模拟LLM响应，包含工具调用
+                # 模拟LLM响应
                 class MockResult:
                     def __init__(self):
-                        self.content = """
-# 股票新闻分析报告
-
-## 📈 核心要点
-基于最新获取的新闻数据，该股票展现出强劲的业绩增长态势：
-
-### 🎯 业绩亮点
-- Q2营收同比增长25%，超出市场预期
-- 净利润增长30%，盈利能力显著提升
-- 新产品线获得重大突破
-
-### 📊 市场影响分析
-**短期影响（1-3个月）**：
-- 预期股价上涨5-10%
-- 市场情绪转向积极
-
-**中期影响（3-12个月）**：
-- 新产品线贡献增量收入
-- 估值有望修复至合理水平
-
-### 💰 投资建议
-- **评级**：买入
-- **目标价**：50元
-- **风险等级**：中等
-
-基于真实新闻数据的专业分析报告。
-"""
-                        # 模拟工具调用
-                        self.tool_calls = [{
-                            "name": "get_stock_news_unified",
-                            "args": {"stock_code": "000001", "max_news": 10}
-                        }]
-                
+                        self.content = "模拟的分析报告"
+                        self.tool_calls = []
                 return MockResult()
-        
+
         llm = MockLLM()
         print("✅ 创建模拟LLM成功")
-        
-        # 创建新闻分析师
-        news_analyst = create_news_analyst(llm, toolkit)
+
+        # 创建新闻分析师 (不再需要toolkit)
+        news_analyst = create_news_analyst(llm)
         print("✅ 创建新闻分析师成功")
+
+        # ... (后续测试代码保持不变) ...
+
         
         # 测试不同股票
         test_stocks = [

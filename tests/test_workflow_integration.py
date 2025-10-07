@@ -26,15 +26,6 @@ class MockLLM:
                 self.tool_calls = []
         return MockResult()
 
-class MockToolkit:
-    """模拟工具包"""
-    def get_realtime_stock_news(self, params):
-        return "模拟A股新闻"
-    def get_google_news(self, params):
-        return "模拟Google新闻"
-    def get_global_news_openai(self, params):
-        return "模拟OpenAI新闻"
-
 def test_news_analyst_integration():
     """测试新闻分析师的统一工具集成"""
     print(f"🔍 验证统一新闻工具在整体流程中的使用情况")
@@ -45,12 +36,10 @@ def test_news_analyst_integration():
         print(f"\n📰 第一步：检查新闻分析师的工具绑定...")
         from tradingagents.agents.analysts.news_analyst import create_news_analyst
         
-        # 创建模拟工具包
-        mock_toolkit = MockToolkit()
         mock_llm = MockLLM()
-        
+
         # 创建新闻分析师
-        news_analyst = create_news_analyst(mock_llm, mock_toolkit)
+        news_analyst = create_news_analyst(mock_llm)
         print(f"  ✅ 新闻分析师创建成功")
         
         # 2. 检查统一新闻工具的导入和使用
@@ -58,8 +47,8 @@ def test_news_analyst_integration():
         
         # 检查统一新闻工具是否能正常导入
         try:
-            from tradingagents.tools.unified_news_tool import create_unified_news_tool
-            test_tool = create_unified_news_tool(mock_toolkit)
+            from tradingagents.tools.unified_news_wrapper import get_stock_news_unified
+            test_tool = get_stock_news_unified
             print(f"  ✅ 统一新闻工具导入成功")
             print(f"  📝 工具名称: {getattr(test_tool, 'name', '未设置')}")
             print(f"  📝 工具描述: {test_tool.description[:100]}...")
@@ -77,14 +66,12 @@ def test_news_analyst_integration():
             
             # 检查关键集成点
             integration_checks = [
-                ("统一新闻工具导入", "from tradingagents.tools.unified_news_tool import create_unified_news_tool"),
-                ("工具创建", "unified_news_tool = create_unified_news_tool(toolkit)"),
-                ("工具名称设置", 'unified_news_tool.name = "get_stock_news_unified"'),
-                ("工具列表", "tools = [unified_news_tool]"),
+                ("统一新闻工具导入", "from tradingagents.tools.unified_news_wrapper import get_stock_news_unified"),
+                ("工具列表", "tools = [get_stock_news_unified]"),
                 ("系统提示词包含工具", "get_stock_news_unified"),
                 ("强制工具调用", "您的第一个动作必须是调用 get_stock_news_unified 工具"),
                 ("DashScope预处理", "DashScope预处理：强制获取新闻数据"),
-                ("预处理工具调用", "pre_fetched_news = unified_news_tool(stock_code=ticker"),
+                ("预处理工具调用", "pre_fetched_news = get_stock_news_unified.invoke({\"stock_code\": ticker})"),
                 ("LLM工具绑定", "llm.bind_tools(tools)")
             ]
             

@@ -8,10 +8,7 @@ logger = logging.getLogger(__name__)
 
 @tool
 def get_stock_fundamentals_unified(
-    ticker: Annotated[str, "The stock ticker to analyze (e.g., '600519', '0700.HK', 'AAPL')."],
-    start_date: Annotated[Optional[str], "The start date for data fetching (YYYY-MM-DD). Defaults to one year ago."] = None,
-    end_date: Annotated[Optional[str], "The end date for data fetching (YYYY-MM-DD). Defaults to today."] = None,
-    curr_date: Annotated[Optional[str], "The current date for the analysis (YYYY-MM-DD). Defaults to today."] = None
+    ticker: Annotated[str, "The stock ticker to analyze (e.g., '600519', '0700.HK', 'AAPL')."]
 ) -> str:
     """
     A unified tool for fetching stock fundamental data that is backward-compatible with the original interface.
@@ -44,13 +41,26 @@ def get_stock_fundamentals_unified(
         return f"在为 {ticker} 获取基本面数据时，统一接口发生严重错误: {e}"
 
 # Example of how this wrapper can be used directly:
-# if __name__ == '__main__':
-#     logging.basicConfig(level=logging.INFO)
-#
-#     print("--- Testing Unified Wrapper Tool ---")
-#
-#     # The call signature is the same as the old function.
-#     report = get_stock_fundamentals_unified.invoke({"ticker": "AAPL"})
-#
-#     print("\n--- Report for AAPL ---")
-#     print(report)
+if __name__ == '__main__':
+    # 使用项目自身的日志设置以保持一致性
+    from tradingagents.utils.logging_manager import setup_logging
+    setup_logging()
+
+    print("--- 🚀 测试统一基本面包装工具 ---")
+
+    test_tickers = [
+        "600519",    # A股 (贵州茅台)
+        "0700.HK",   # 港股 (腾讯控股)
+        "AAPL"       # 美股 (苹果公司)
+    ]
+
+    for ticker in test_tickers:
+        print(f"\n--- 📊 {ticker} 的基本面报告 ---")
+        try:
+            # @tool 装饰的工具的 invoke 方法需要一个字典
+            report = get_stock_fundamentals_unified.invoke({"ticker": ticker})
+            print(report)
+        except Exception as e:
+            print(f"--- ❌ 获取 {ticker} 报告时出错: {e} ---")
+
+    print("\n--- ✅ 测试完成 ---")
