@@ -52,6 +52,7 @@ dependencies = [
 
 [project.optional-dependencies]
 qianfan = ["qianfan>=0.4.20"]
+enhanced-news = ["transformers>=4.0.0", "sentence-transformers>=2.2.0"]
 
 [project.scripts]
 tradingagents = "main:main"

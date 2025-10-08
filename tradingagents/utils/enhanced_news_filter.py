@@ -234,23 +234,41 @@ class EnhancedNewsFilter(NewsRelevanceFilter):
         else:
             scores['classification_score'] = 0
         
-        # 4. 综合评分（加权平均）
-        weights = {
-            'rule': 0.4,      # 规则过滤权重40%
-            'semantic': 0.35,  # 语义相似度权重35%
-            'classification': 0.25  # 分类模型权重25%
+        # 4. 综合评分（动态加权平均）
+        base_weights = {
+            'rule': 0.4,
+            'semantic': 0.35,
+            'classification': 0.25
         }
-        
-        final_score = (
-            weights['rule'] * rule_score +
-            weights['semantic'] * scores['semantic_score'] +
-            weights['classification'] * scores['classification_score']
-        )
-        
+
+        active_weights = {'rule': base_weights['rule']}
+        if self.use_semantic:
+            active_weights['semantic'] = base_weights['semantic']
+        if self.use_local_model:
+            active_weights['classification'] = base_weights['classification']
+
+        # 归一化权重，使总和为1
+        total_weight = sum(active_weights.values())
+        if total_weight > 0:
+            normalized_weights = {k: v / total_weight for k, v in active_weights.items()}
+        else:
+            normalized_weights = {}
+
+        # 计算最终得分
+        final_score = 0
+        if 'rule' in normalized_weights:
+            final_score += normalized_weights['rule'] * scores['rule_score']
+        if 'semantic' in normalized_weights:
+            final_score += normalized_weights['semantic'] * scores.get('semantic_score', 0)
+        if 'classification' in normalized_weights:
+            final_score += normalized_weights['classification'] * scores.get('classification_score', 0)
+
         scores['final_score'] = final_score
-        
-        logger.debug(f"[增强过滤器] 综合评分 - 规则:{rule_score:.1f}, 语义:{scores['semantic_score']:.1f}, "
-                    f"分类:{scores['classification_score']:.1f}, 最终:{final_score:.1f}")
+
+        # 更新日志，显示使用的权重
+        debug_weights_str = ", ".join([f"{k}:{v:.2f}" for k, v in normalized_weights.items()])
+        logger.debug(f"[增强过滤器] 综合评分 - 规则:{scores['rule_score']:.1f}, 语义:{scores['semantic_score']:.1f}, "
+                    f"分类:{scores['classification_score']:.1f}, 权重:({debug_weights_str}), 最终:{final_score:.1f}")
         
         return scores
     
